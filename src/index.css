@@ -1,0 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+/* Font defaults */
+* {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 300;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 600;
+}
+
+/* Heading styles */
+.heading-primary {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 700;
+}
+
+.heading-secondary {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 600;
+}
+
+/* Body text */
+.body-text {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 400;
+}
+
+.body-text-light {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 300;
+}
+
+html, body {
+  overflow-x: hidden;
+  box-sizing: border-box;
+  font-family: 'Roboto', sans-serif;
+}
