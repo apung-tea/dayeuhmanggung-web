@@ -14,9 +14,9 @@ router.get('/', async (req, res) => {
 
 // POST tambah data
 router.post('/', async (req, res) => {
-  const { judul, deskripsi } = req.body;
+  const { judul, deskripsi, kategori } = req.body;
   try {
-    const [result] = await db.query('INSERT INTO data_dayeuh (judul, deskripsi) VALUES (?, ?)', [judul, deskripsi]);
+    const [result] = await db.query('INSERT INTO data_dayeuh (judul, deskripsi, kategori) VALUES (?, ?, ?)', [judul, deskripsi, kategori]);
     res.json({ success: true, id: result.insertId });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -25,9 +25,9 @@ router.post('/', async (req, res) => {
 
 // PUT edit data
 router.put('/:id', async (req, res) => {
-  const { judul, deskripsi } = req.body;
+  const { judul, deskripsi, kategori } = req.body;
   try {
-    await db.query('UPDATE data_dayeuh SET judul=?, deskripsi=? WHERE id=?', [judul, deskripsi, req.params.id]);
+    await db.query('UPDATE data_dayeuh SET judul=?, deskripsi=?, kategori=? WHERE id=?', [judul, deskripsi, kategori, req.params.id]);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

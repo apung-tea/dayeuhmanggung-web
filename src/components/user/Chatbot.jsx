@@ -65,7 +65,16 @@ const Chatbot = () => {
     setIsBotTyping(true);
     try {
       const response = await query({ question: message });
-      addMessage(response.answer || response.text || response.message || "Maaf, saya tidak mengerti.");
+      const botReply = response.answer || response.text || response.message;
+      if (
+        !botReply ||
+        botReply.trim().toLowerCase() === "hmm, i'm not sure." ||
+        botReply.trim().toLowerCase() === "i'm not sure."
+      ) {
+        addMessage("Maaf, saya tidak mengerti.");
+      } else {
+        addMessage(botReply);
+      }
     } catch (error) {
       addMessage("Maaf, terjadi kesalahan. Silakan coba lagi.");
     }

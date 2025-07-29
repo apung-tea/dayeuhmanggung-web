@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { dataDayeuhService } from '../../services/api';
 
-const initialForm = { judul: '', deskripsi: '' };
+const initialForm = { judul: '', deskripsi: '', kategori: '' };
 
 const DayeuhData = () => {
   const [data, setData] = useState([]);
@@ -17,12 +17,33 @@ const DayeuhData = () => {
   const pageSize = 10;
   // Tambah state untuk pencarian
   const [search, setSearch] = useState("");
+  // State untuk filter kategori
+  const [filterKategori, setFilterKategori] = useState("");
 
-  // Filter data sesuai pencarian
-  const filteredData = data.filter(item =>
-    item.judul.toLowerCase().includes(search.toLowerCase()) ||
-    item.deskripsi.toLowerCase().includes(search.toLowerCase())
-  );
+  // Daftar kategori yang tersedia
+  const kategoriList = [
+    'Fasilitas Umum',
+    'Akses & Transportasi',
+    'Tiket dan Harga',
+    'Aktivitas Wisata',
+    'Cuaca dan Musim',
+    'Sejarah dan Budaya',
+    'Keamanan dan Aturan',
+    'Kuliner',
+    'Penginapan',
+    'Event atau Kegiatan Khusus',
+    'Lainnya'
+  ];
+
+  // Filter data sesuai pencarian dan kategori
+  const filteredData = data.filter(item => {
+    const matchesSearch = item.judul.toLowerCase().includes(search.toLowerCase()) ||
+                         item.deskripsi.toLowerCase().includes(search.toLowerCase()) ||
+                         (item.kategori && item.kategori.toLowerCase().includes(search.toLowerCase()));
+    const matchesKategori = !filterKategori || item.kategori === filterKategori;
+    return matchesSearch && matchesKategori;
+  });
+  
   const totalPages = Math.max(1, Math.ceil((filteredData.length || 0) / pageSize));
   const pagedData = (filteredData || []).slice((page - 1) * pageSize, page * pageSize);
   React.useEffect(() => { setPage(1); }, [filteredData.length]);
@@ -51,7 +72,7 @@ const DayeuhData = () => {
   };
 
   const handleEditClick = (item) => {
-    setForm({ judul: item.judul, deskripsi: item.deskripsi });
+    setForm({ judul: item.judul, deskripsi: item.deskripsi, kategori: item.kategori || '' });
     setEditMode(true);
     setEditId(item.id);
     setShowModal(true);
@@ -105,11 +126,21 @@ const DayeuhData = () => {
             <input
               type="text"
               className="border border-gray-300 rounded-lg pl-9 pr-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-green-300"
-              placeholder="Cari judul atau deskripsi..."
+              placeholder="Cari judul, deskripsi, atau kategori..."
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
           </div>
+          <select
+            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-300"
+            value={filterKategori}
+            onChange={e => setFilterKategori(e.target.value)}
+          >
+            <option value="">Semua Kategori</option>
+            {kategoriList.map(kategori => (
+              <option key={kategori} value={kategori}>{kategori}</option>
+            ))}
+          </select>
           <button 
             onClick={handleOpenModal} 
             className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
@@ -134,6 +165,7 @@ const DayeuhData = () => {
               <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-300">
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200">ID</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200">Judul</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200">Kategori</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200">Deskripsi</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Aksi</th>
               </tr>
@@ -144,6 +176,11 @@ const DayeuhData = () => {
                   <tr key={item.id} className={`hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200 border-b border-gray-200">{item.id}</td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-gray-200 border-b border-gray-200">{item.judul}</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200 border-b border-gray-200">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {item.kategori || 'Tidak ada kategori'}
+                      </span>
+                    </td>
                     <td className="px-4 py-3 text-sm text-gray-500 max-w-xs truncate border-r border-gray-200 border-b border-gray-200">{item.deskripsi}</td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm font-medium border-b border-gray-200">
                       <div className="flex flex-col gap-2">
@@ -165,13 +202,13 @@ const DayeuhData = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" className="px-4 py-8 text-center text-gray-500 border-b border-gray-200">
+                  <td colSpan="5" className="px-4 py-8 text-center text-gray-500 border-b border-gray-200">
                     <div className="flex flex-col items-center">
                       <svg className="w-12 h-12 text-gray-300 mb-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                       </svg>
                       <p>Tidak ada data</p>
-                      <p className="text-sm text-gray-400">Klik "Tambah Data Dayeuh" untuk menambahkan data baru</p>
+                      <p className="text-sm text-gray-400">Klik "Tambah Data" untuk menambahkan data baru</p>
                     </div>
                   </td>
                 </tr>
@@ -236,6 +273,20 @@ const DayeuhData = () => {
                     required
                     placeholder="Masukkan judul data"
                   />
+                </div>
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-green-700">Kategori</label>
+                  <select
+                    className="w-full border border-green-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-300 bg-green-50"
+                    value={form.kategori}
+                    onChange={e => setForm(f => ({ ...f, kategori: e.target.value }))}
+                    required
+                  >
+                    <option value="">Pilih Kategori</option>
+                    {kategoriList.map(kategori => (
+                      <option key={kategori} value={kategori}>{kategori}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block mb-2 text-sm font-medium text-green-700">Deskripsi</label>
