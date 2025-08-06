@@ -10,31 +10,39 @@ function useInViewAnimation(count) {
 
   useEffect(() => {
     refs.current = refs.current.slice(0, count);
+    setVisible(Array(count).fill(false));
+    
     const observer = new window.IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           const idx = Number(entry.target.getAttribute('data-idx'));
-          if (entry.isIntersecting) {
+          if (idx >= 0 && idx < count) {
             setVisible((v) => {
               const copy = [...v];
-              copy[idx] = true;
-              return copy;
-            });
-          } else {
-            setVisible((v) => {
-              const copy = [...v];
-              copy[idx] = false;
+              if (entry.isIntersecting) {
+                copy[idx] = true;
+              } else {
+                copy[idx] = false;
+              }
               return copy;
             });
           }
         });
       },
-      { threshold: 0.2 }
+      { threshold: 0.2, rootMargin: '50px' }
     );
-    refs.current.forEach((ref) => {
-      if (ref) observer.observe(ref);
-    });
-    return () => observer.disconnect();
+    
+    // Delay observation to prevent immediate triggers
+    const timeoutId = setTimeout(() => {
+      refs.current.forEach((ref) => {
+        if (ref) observer.observe(ref);
+      });
+    }, 100);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      observer.disconnect();
+    };
   }, [count]);
 
   return [refs, visible];
