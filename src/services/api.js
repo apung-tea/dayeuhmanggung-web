@@ -1,7 +1,7 @@
 
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'http://116.193.191.5:3001/api'  // URL server produksi
-  : 'http://localhost:3001/api';      // URL development
+  ? 'http://116.193.191.5:3001/api' 
+  : 'http://localhost:3001/api';
 
 // Helper function untuk membuat request
 const makeRequest = async (endpoint, options = {}, isFormData = false) => {

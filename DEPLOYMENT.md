@@ -1,123 +1,138 @@
 # 🚀 Deployment Guide - Dayeuhmanggung Site
 
 ## 📋 Prerequisites
-- VPS Ubuntu 24.04 LTS (sudah ada di IDCloudHost)
-- IP Server: `116.193.191.5`
-- Username: `admin`
+- Ubuntu 24.04 LTS server
+- Node.js 18+ installed
+- MySQL/MariaDB installed
+- Git installed
 
-## 🔧 Langkah-langkah Deployment
+## 🔧 Server Setup
 
-### 1. **Persiapan Lokal**
+### 1. Install Node.js
 ```bash
-# Build frontend
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
+```
+
+### 2. Install MySQL
+```bash
+sudo apt update
+sudo apt install mysql-server
+sudo mysql_secure_installation
+```
+
+### 3. Create Database
+```bash
+sudo mysql -u root -p
+```
+```sql
+CREATE DATABASE dayeuhmanggung_db;
+CREATE USER 'dayeuhmanggung'@'localhost' IDENTIFIED BY 'Ajoh1234';
+GRANT ALL PRIVILEGES ON dayeuhmanggung_db.* TO 'dayeuhmanggung'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+```
+
+### 4. Import Database Schema
+```bash
+mysql -u dayeuhmanggung -p dayeuhmanggung_db < dayeuhmanggung_db.sql
+```
+
+## 🚀 Deployment Steps
+
+### 1. Clone Repository
+```bash
+git clone <your-github-repo-url>
+cd dayeuhmanggung-site-jsdone
+```
+
+### 2. Setup Environment Variables
+```bash
+cp api/env.example api/.env
+# Edit api/.env dengan konfigurasi yang sesuai
+```
+
+### 3. Install Dependencies
+```bash
+# Install frontend dependencies
+npm install
+
+# Install backend dependencies
+cd api
+npm install
+cd ..
+```
+
+### 4. Build Frontend
+```bash
 npm run build
-
-# Pastikan semua file sudah siap
-git add .
-git commit -m "Ready for deployment"
 ```
 
-### 2. **Upload ke Server**
+### 5. Install PM2
 ```bash
-# Jalankan script deployment
-chmod +x deploy.sh
-./deploy.sh
+npm install -g pm2
 ```
 
-### 3. **Setup Server**
+### 6. Start Applications
 ```bash
-# SSH ke server
-ssh admin@116.193.191.5
+# Start with PM2
+pm2 start ecosystem.config.js
 
-# Jalankan setup script
-chmod +x setup.sh
-./setup.sh
-```
-
-### 4. **Konfigurasi Environment**
-```bash
-# Edit file .env di server
-nano api/.env
-```
-
-Isi dengan kredensial yang benar:
-```env
-DB_HOST=localhost
-DB_USER=dayeuhmanggung
-DB_PASS=your_secure_password
-DB_NAME=dayeuhmanggung_db
-PORT=3001
-NODE_ENV=production
-JWT_SECRET=your_jwt_secret_here
-```
-
-### 5. **Setup Firewall**
-```bash
-chmod +x firewall-setup.sh
-./firewall-setup.sh
-```
-
-### 6. **Restart Services**
-```bash
-# Restart nginx
-sudo systemctl restart nginx
-
-# Restart PM2
-pm2 restart all
+# Save PM2 configuration
 pm2 save
+
+# Setup PM2 to start on boot
+pm2 startup
 ```
 
-## 🌐 Akses Website
-- **Website Utama**: http://116.193.191.5
-- **Admin Panel**: http://116.193.191.5/admin
-- **API Endpoint**: http://116.193.191.5/api
+## 🔍 Monitoring
 
-## 🔍 Troubleshooting
-
-### Jika website tidak bisa diakses:
-1. Cek status nginx: `sudo systemctl status nginx`
-2. Cek status PM2: `pm2 status`
-3. Cek logs: `pm2 logs dayeuhmanggung-api`
-4. Cek firewall: `sudo ufw status`
-
-### Jika database error:
-1. Cek MySQL status: `sudo systemctl status mysql`
-2. Test koneksi: `mysql -u dayeuhmanggung -p dayeuhmanggung_db`
-3. Cek environment variables di `api/.env`
-
-### Jika upload gambar error:
-1. Cek permission folder: `ls -la public/images/`
-2. Set permission: `chmod 755 public/images/`
-3. Set ownership: `chown -R admin:admin public/images/`
-
-## 📊 Monitoring
-- **PM2 Dashboard**: `pm2 monit`
-- **Nginx Logs**: `sudo tail -f /var/log/nginx/access.log`
-- **Application Logs**: `pm2 logs dayeuhmanggung-api`
-
-## 🔄 Update Deployment
-Untuk update website:
+### Check Status
 ```bash
-# Di local machine
-npm run build
-./deploy.sh
-
-# Di server
-pm2 restart dayeuhmanggung-api
-sudo systemctl reload nginx
+pm2 status
 ```
 
-## 🔐 Security Checklist
-- [ ] Firewall aktif
-- [ ] Database password kuat
-- [ ] JWT secret unik
-- [ ] Nginx konfigurasi aman
-- [ ] SSL certificate (opsional)
-- [ ] Regular backups
+### Check Logs
+```bash
+pm2 logs
+pm2 logs dayeuhmanggung-api
+pm2 logs dayeuhmanggung-frontend
+```
 
-## 📞 Support
-Jika ada masalah, cek:
-1. Logs aplikasi
-2. Status services
-3. Network connectivity
-4. Database connection 
+### Restart Applications
+```bash
+pm2 restart all
+pm2 restart dayeuhmanggung-api
+pm2 restart dayeuhmanggung-frontend
+```
+
+## 🌐 Access URLs
+- Frontend: http://116.193.191.5:3000
+- API: http://116.193.191.5:3001
+- API Health Check: http://116.193.191.5:3001/
+
+## 🔧 Troubleshooting
+
+### If API is not accessible:
+1. Check if MySQL is running: `sudo systemctl status mysql`
+2. Check database connection in `api/.env`
+3. Check PM2 logs: `pm2 logs dayeuhmanggung-api`
+
+### If Frontend is not accessible:
+1. Check if build was successful
+2. Check PM2 logs: `pm2 logs dayeuhmanggung-frontend`
+3. Verify port 3000 is open
+
+### Firewall Configuration
+```bash
+sudo ufw allow 3000
+sudo ufw allow 3001
+sudo ufw allow 22
+sudo ufw enable
+```
+
+## 📝 Important Notes
+- Password database: Ajoh1234
+- API runs on port 3001
+- Frontend runs on port 3000
+- All logs are stored in `./logs/` directory 

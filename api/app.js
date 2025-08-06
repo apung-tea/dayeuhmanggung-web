@@ -8,8 +8,16 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // ===== Middleware =====
-app.use(cors()); // <--- Tambahkan ini
-// CORS untuk development & produksi
+// CORS configuration untuk production
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['http://116.193.191.5:3000', 'http://116.193.191.5'] 
+    : ['http://localhost:3000', 'http://localhost:5173'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 
 // Static file untuk gambar
 app.use('/images', express.static(path.join(__dirname, '../public/images')));

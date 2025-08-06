@@ -1,23 +1,34 @@
 #!/bin/bash
 
-# Script Deployment untuk Dayeuhmanggung Site
-# Pastikan server sudah siap dengan Node.js, MySQL, dan PM2
+echo "🚀 Starting deployment process..."
 
-echo "🚀 Memulai deployment Dayeuhmanggung Site..."
-
-# 1. Build frontend
+# Build frontend
 echo "📦 Building frontend..."
 npm run build
 
-# 2. Upload ke server menggunakan rsync atau scp
-echo "📤 Uploading ke server..."
-# Ganti dengan IP server Anda
-SERVER_IP="116.193.191.5"
-SERVER_USER="admin"
-SERVER_PATH="/home/admin/dayeuhmanggung-site"
+# Create logs directory
+mkdir -p logs
 
-# Upload seluruh proyek
-rsync -avz --exclude 'node_modules' --exclude '.git' ./ $SERVER_USER@$SERVER_IP:$SERVER_PATH/
+# Install dependencies for backend
+echo "📦 Installing backend dependencies..."
+cd api
+npm install
+cd ..
 
-echo "✅ Upload selesai!"
-echo "🔧 Selanjutnya, login ke server dan jalankan setup.sh" 
+# Install PM2 globally if not installed
+echo "🔧 Installing PM2..."
+npm install -g pm2
+
+# Start applications with PM2
+echo "🚀 Starting applications with PM2..."
+pm2 start ecosystem.config.js
+
+# Save PM2 configuration
+pm2 save
+
+# Setup PM2 to start on system boot
+pm2 startup
+
+echo "✅ Deployment completed!"
+echo "📊 Check status with: pm2 status"
+echo "📋 Check logs with: pm2 logs" 
